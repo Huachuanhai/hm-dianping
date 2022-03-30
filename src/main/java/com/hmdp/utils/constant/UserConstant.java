@@ -12,19 +12,16 @@ public class UserConstant {
      * 手机验证码的长度
      */
     public static final Integer CODE_LENGTH = 6;
+
     /**
-     * session存手机号验证码的key
+     * 昵称后缀长度
      */
-    public static final String SESSION_CODE = "code";
+    public static final Integer NIKE_NAME_SUFFIX_LENGTH = 10;
 
     /**
      * 手机号
      */
     public static final String PHONE = "phone";
 
-    /**
-     * session存用户信息的key
-     */
-    public static final String SESSION_USER = "user";
 
 }

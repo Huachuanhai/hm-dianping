@@ -9,7 +9,7 @@ import javax.servlet.http.HttpSession;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author 虎哥
@@ -19,16 +19,17 @@ public interface IUserService extends IService<User> {
 
     /**
      * 发生短信验证码
+     *
      * @param phone 手机号码
-     * @param session session
      * @return Result
      */
-    Result sendCode(String phone, HttpSession session);
+    Result sendCode(String phone);
 
     /**
      * 登录
+     *
      * @param loginForm 参数
      * @return Result
      */
-    Result login(LoginFormDTO loginForm, HttpSession session);
+    Result login(LoginFormDTO loginForm);
 }

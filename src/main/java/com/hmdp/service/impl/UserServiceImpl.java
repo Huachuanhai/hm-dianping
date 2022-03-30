@@ -14,6 +14,7 @@ import com.hmdp.service.IUserService;
 import com.hmdp.utils.RegexUtils;
 import com.hmdp.utils.SystemConstants;
 import com.hmdp.utils.constant.UserConstant;
+import com.hmdp.utils.constant.exceptionConstant.UserExceptionConstant;
 import com.hmdp.utils.constant.redis.RedisExpirationTimeConstant;
 import com.hmdp.utils.constant.redis.RedisKeyConstants;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +22,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -43,17 +42,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private StringRedisTemplate stringRedisTemplate;
 
     @Override
-    public Result sendCode(String phone, HttpSession session) {
+    public Result sendCode(String phone) {
         //1.校验手机号
         if (RegexUtils.isPhoneInvalid(phone)) {
             //2.如果不符合，返回错误信息
-            return Result.fail("手机号格式错误");
+            return Result.fail(UserExceptionConstant.PHONE_NUMBER_FORMAT_ERROR);
         }
         //3.符合，生成验证码
         String code = RandomUtil.randomNumbers(UserConstant.CODE_LENGTH);
 
-        //4.保存验证码到session
-//        session.setAttribute(UserConstant.SESSION_CODE, code);
         // 4.保存验证码到redis
         stringRedisTemplate.opsForValue().set(RedisKeyConstants.LOGIN_SEND_MESSAGE_Key + phone,
                 code, RedisExpirationTimeConstant.LOGIN_SMS_TTL, TimeUnit.MINUTES);
@@ -66,25 +63,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public Result login(LoginFormDTO loginForm, HttpSession session) {
+    public Result login(LoginFormDTO loginForm) {
+
         // 1.校验手机号
         String phone = loginForm.getPhone();
         if (RegexUtils.isPhoneInvalid(phone)) {
             //2.如果不符合，返回错误信息
-            return Result.fail("手机号格式错误");
+            return Result.fail(UserExceptionConstant.PHONE_NUMBER_FORMAT_ERROR);
         }
-        // 3.校验验证码
-//        Object cacheCode = session.getAttribute(UserConstant.SESSION_CODE);
+
         //3.从redis获取验证码并校验
         String cacheCode = stringRedisTemplate.opsForValue().get(RedisKeyConstants.LOGIN_SEND_MESSAGE_Key + phone);
         String code = loginForm.getCode();
         if (null == cacheCode || !cacheCode.equals(code)) {
             // 不一致，报错
-            return Result.fail("验证码错误");
+            return Result.fail(UserExceptionConstant.VERIFICATION_CODE_ERROR);
         }
 
         // 4. 一致，根据手机号查询用户
-        User user = query().eq("phone", phone).one();
+        User user = query().eq(UserConstant.PHONE, phone).one();
 
         //5.判断用户是否存在
         if (null == user) {
@@ -92,8 +89,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             user = createUserWithPhone(phone);
         }
 
-        //7.保存用户信息到session中
-//        session.setAttribute("user", BeanUtil.copyProperties(user, UserDTO.class));
         //7.保存用户信息到redis中
         //7.1 随机生成一个token,作为登录令牌
         String token = UUID.randomUUID().toString(true);
@@ -125,7 +120,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //1.创建用户
         User user = new User();
         user.setPhone(phone);
-        user.setNickName(SystemConstants.USER_NICK_NAME_PREFIX + RandomUtil.randomString(10));
+        user.setNickName(SystemConstants.USER_NICK_NAME_PREFIX +
+                RandomUtil.randomString(UserConstant.NIKE_NAME_SUFFIX_LENGTH));
+
         //2.保存用户
         save(user);
         return user;
