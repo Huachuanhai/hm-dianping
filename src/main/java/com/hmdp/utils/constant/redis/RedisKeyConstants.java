@@ -18,6 +18,12 @@ public class RedisKeyConstants {
      */
     public static final String LOGIN_TOKEN = "login_token-";
 
+    public static final String CACHE_SHOP_KEY = "cache:shop:";
+
+    public static final String CACHE_SHOP_TYPE_KEY = "cache:shop:type";
+
+    public static final String LOCK_SHOP_KEY = "lock:shop:";
+
 
 
 }

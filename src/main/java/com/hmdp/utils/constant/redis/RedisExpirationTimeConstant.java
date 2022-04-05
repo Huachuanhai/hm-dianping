@@ -17,4 +17,13 @@ public class RedisExpirationTimeConstant {
      * 用户登录有效期：30分钟
      */
     public static final Long LOGIN_USER_TTL = 30L;
+
+    public static final Long CACHE_SHOP_TTL = 30L;
+
+    public static final Long CACHE_NULL_TTL = 2L;
+
+    public static final Long LOCK_SHOP_TTL = 10L;
+
+
+
 }
